@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeQuest — My Roadmap</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">Code<span>Quest</span></a>
+  <div class="nav-links">
+    <div id="navXp"></div>
+    <div id="navStreak"></div>
+    <a href="profile.html" class="nav-link" data-page="profile">Profile</a>
+    <a href="roadmap.html" class="nav-link active" data-page="roadmap">Roadmap</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+
+  <!-- Roadmap header -->
+  <div class="roadmap-header">
+    <div class="container">
+      <div class="roadmap-meta">
+        <div>
+          <h1 style="font-size:1.6rem;margin-bottom:4px;" id="roadmapTitle">My Roadmap</h1>
+          <p style="font-size:0.9rem;color:var(--text-secondary);" id="roadmapSubtitle">Loading...</p>
+        </div>
+        <div style="flex:1;max-width:280px;">
+          <div class="flex-between" style="margin-bottom:6px;font-size:0.82rem;">
+            <span style="color:var(--text-secondary);">Overall Progress</span>
+            <span id="overallPct" style="color:var(--primary);font-weight:700;">0%</span>
+          </div>
+          <div class="progress-bar" style="height:8px;">
+            <div class="progress-fill" id="overallBar" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="flex gap-md">
+          <div style="text-align:center;">
+            <div style="font-size:1.4rem;font-weight:800;color:var(--neon-yellow);" id="headerXp">0</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Total XP</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:1.4rem;font-weight:800;color:var(--primary);" id="headerLevel">1</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Level</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="roadmap-main">
+
+      <!-- Sidebar: topic list -->
+      <div class="roadmap-sidebar page-enter">
+        <div class="glass-card" style="padding:var(--space-lg);">
+          <h4 style="margin-bottom:var(--space-md);font-size:0.95rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.08em;">Topics</h4>
+          <div class="topic-list" id="topicList"></div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="glass-card" style="padding:var(--space-lg);margin-top:var(--space-lg);" id="recsCard">
+          <h4 style="margin-bottom:var(--space-md);font-size:0.95rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.08em;">💡 Recommended</h4>
+          <div id="recsList"></div>
+        </div>
+      </div>
+
+      <!-- Main: path nodes -->
+      <div class="roadmap-path page-enter" id="roadmapPath">
+        <div class="flex-center" style="height:200px;">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Topic Detail Modal -->
+<div class="modal-overlay" id="topicModal">
+  <div class="modal" style="max-width:560px;">
+    <div id="topicModalContent"></div>
+    <div class="flex gap-md" style="margin-top:var(--space-xl);">
+      <button class="btn btn-ghost" onclick="Modal.close('topicModal')">Close</button>
+      <button class="btn btn-primary" id="startTopicBtn">Start Topic →</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/adaptiveLearning.js"></script>
+<script src="data/javascript.js"></script>
+<script src="data/python.js"></script>
+<script src="data/other-languages.js"></script>
+<script>
+(function() {
+  const profile = Storage.getProfile();
+  if (!profile.language) { window.location.href = 'questionnaire.html'; return; }
+
+  const lang   = profile.language;
+  const course = COURSES[lang];
+  if (!course) { window.location.href = 'questionnaire.html'; return; }
+
+  // Init nav
+  document.getElementById('navXp').innerHTML     = Nav.renderXP(profile.xp, profile.level_num);
+  document.getElementById('navStreak').innerHTML = Nav.renderStreak(profile.streak);
+  document.getElementById('headerXp').textContent    = profile.xp.toLocaleString();
+  document.getElementById('headerLevel').textContent = profile.level_num;
+
+  // Update title
+  document.getElementById('roadmapTitle').textContent   = `${course.emoji} ${course.name} Roadmap`;
+  document.getElementById('roadmapSubtitle').textContent = `${profile.level.charAt(0).toUpperCase() + profile.level.slice(1)} track · ${course.topics.length} topics`;
+
+  // Initialize topic statuses
+  AdaptiveLearning.updateTopicStatuses(lang);
+
+  // Calculate & display overall progress
+  const overallPct = AdaptiveLearning.getCourseProgress(lang);
+  document.getElementById('overallPct').textContent = overallPct + '%';
+  ProgressUI.animateBar(document.getElementById('overallBar'), overallPct);
+
+  // Render sidebar topic list
+  renderTopicList();
+
+  // Render roadmap path
+  renderRoadmapPath();
+
+  // Recommendations
+  renderRecommendations();
+
+  function getTopicState(topic) {
+    const tp = Storage.getTopicProgress(lang, topic.id);
+    const mastery = AdaptiveLearning.calculateMastery(tp);
+    const prereqs = topic.prerequisites || [];
+    const status = tp.status || (prereqs.length === 0 ? 'available' : 'locked');
+
+    let state;
+    if (mastery >= 75) state = 'completed';
+    else if (mastery > 0 || tp.lessonsCompleted?.length > 0) state = 'active';
+    else if (status === 'available' || status === 'in_progress') state = 'available';
+    else state = 'locked';
+    return { mastery, state, tp };
+  }
+
+  function renderTopicList() {
+    const list = document.getElementById('topicList');
+    list.innerHTML = course.topics.map((t, i) => {
+      const { mastery, state } = getTopicState(t);
+      const icons = { completed: '✅', active: '🔵', available: '⬜', locked: '🔒' };
+      return `
+        <div class="topic-item ${state}" onclick="scrollToNode('${t.id}')">
+          <span class="topic-status-icon">${icons[state]}</span>
+          <div class="topic-info">
+            <div class="topic-name">${t.emoji} ${t.title}</div>
+            <div class="topic-progress-text">${mastery}% mastery · ${t.xpReward} XP</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderRoadmapPath() {
+    const path = document.getElementById('roadmapPath');
+    path.innerHTML = '<div class="path-line"></div>';
+
+    course.topics.forEach((topic, i) => {
+      const { mastery, state } = getTopicState(topic);
+      const isRight = i % 2 === 1;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = `roadmap-node-wrapper`;
+      wrapper.id = `node-${topic.id}`;
+
+      // Center connector
+      const center = document.createElement('div');
+      center.className = 'node-center';
+      center.textContent = state === 'completed' ? '✅' : state === 'locked' ? '🔒' : topic.emoji;
+
+      // Card
+      const card = document.createElement('div');
+      card.className = `roadmap-node ${state}`;
+      card.innerHTML = `
+        <div class="node-header">
+          <span class="node-title">${topic.title}</span>
+          <span class="node-xp">+${topic.xpReward} XP</span>
+        </div>
+        <p class="node-desc">${topic.description}</p>
+        <div class="progress-bar" style="margin-bottom:var(--space-md);">
+          <div class="progress-fill" style="width:${mastery}%"></div>
+        </div>
+        <div class="node-footer">
+          <span class="node-mastery">${MASTERY.getLevel(mastery).icon} ${MASTERY.getLevel(mastery).label}</span>
+          <span class="node-time">⏱ ${topic.estimatedMinutes}m</span>
+        </div>
+        <div style="margin-top:var(--space-md);">
+          <span class="badge badge-${state === 'completed' ? 'success' : state === 'active' ? 'primary' : state === 'locked' ? 'danger' : 'cyan'}">${state === 'completed' ? 'Completed' : state === 'active' ? 'In Progress' : state === 'locked' ? 'Locked' : 'Available'}</span>
+          <span class="badge badge-purple" style="margin-left:4px;">${topic.difficulty}</span>
+        </div>
+      `;
+
+      if (state !== 'locked') {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => openTopicModal(topic, { mastery, state }));
+      }
+
+      // Filler div for layout
+      const filler = document.createElement('div');
+      filler.style.flex = '1';
+
+      if (isRight) {
+        wrapper.appendChild(filler);
+        wrapper.appendChild(center);
+        wrapper.appendChild(card);
+      } else {
+        wrapper.appendChild(card);
+        wrapper.appendChild(center);
+        wrapper.appendChild(filler);
+      }
+
+      path.appendChild(wrapper);
+    });
+  }
+
+  window.scrollToNode = function(topicId) {
+    const node = document.getElementById(`node-${topicId}`);
+    if (node) node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  let currentTopicId = null;
+
+  function openTopicModal(topic, { mastery, state }) {
+    currentTopicId = topic.id;
+    const content = document.getElementById('topicModalContent');
+    const lessonCount    = (topic.lessons || []).length;
+    const challengeCount = (topic.challenges || []).length;
+
+    content.innerHTML = `
+      <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-lg);">
+        <div style="font-size:3rem;">${topic.emoji}</div>
+        <div>
+          <h3 style="margin-bottom:4px;">${topic.title}</h3>
+          <div class="flex gap-sm">
+            <span class="badge badge-${state === 'completed' ? 'success' : 'primary'}">${state === 'completed' ? 'Completed' : state === 'active' ? 'In Progress' : 'Available'}</span>
+            <span class="badge badge-purple">${topic.difficulty}</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin-bottom:var(--space-lg);">${topic.description}</p>
+      <div class="grid-2" style="margin-bottom:var(--space-lg);">
+        <div class="stat-box">
+          <span class="value" style="color:var(--primary);">${lessonCount}</span>
+          <div class="label">Lessons</div>
+        </div>
+        <div class="stat-box">
+          <span class="value" style="color:var(--neon-yellow);">${challengeCount}</span>
+          <div class="label">Challenges</div>
+        </div>
+        <div class="stat-box">
+          <span class="value" style="color:var(--neon-green);">${mastery}%</span>
+          <div class="label">Mastery</div>
+        </div>
+        <div class="stat-box">
+          <span class="value" style="color:var(--neon-orange);">${topic.xpReward}</span>
+          <div class="label">XP Reward</div>
+        </div>
+      </div>
+      <div class="progress-bar" style="height:8px;margin-bottom:var(--space-md);">
+        <div class="progress-fill" style="width:${mastery}%"></div>
+      </div>
+      <p style="font-size:0.82rem;color:var(--text-muted);">⏱ Estimated: ${topic.estimatedMinutes} minutes</p>
+    `;
+
+    const btn = document.getElementById('startTopicBtn');
+    if (lessonCount > 0) {
+      btn.textContent = mastery > 0 ? 'Continue Lessons →' : 'Start Lessons →';
+      btn.onclick = () => {
+        window.location.href = `lesson.html?lang=${lang}&topic=${topic.id}`;
+      };
+    } else if (challengeCount > 0) {
+      btn.textContent = 'Start Challenges →';
+      btn.onclick = () => {
+        window.location.href = `challenge.html?lang=${lang}&topic=${topic.id}`;
+      };
+    } else {
+      btn.style.display = 'none';
+    }
+
+    Modal.open('topicModal');
+  }
+
+  function renderRecommendations() {
+    const recs  = AdaptiveLearning.getRecommendations(lang, profile);
+    const list  = document.getElementById('recsList');
+    const card  = document.getElementById('recsCard');
+
+    if (recs.length === 0) { card.style.display = 'none'; return; }
+
+    list.innerHTML = recs.map(r => `
+      <div style="padding:var(--space-md);background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:var(--space-sm);cursor:pointer;transition:all var(--transition-base);"
+        onmouseover="this.style.borderColor='var(--primary)'"
+        onmouseout="this.style.borderColor='var(--border)'"
+        onclick="scrollToNode('${r.topicId}')">
+        <div style="font-weight:600;font-size:0.9rem;margin-bottom:4px;">${r.title}</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);">${r.reason}</div>
+      </div>
+    `).join('');
+  }
+
+})();
+</script>
+</body>
+</html>

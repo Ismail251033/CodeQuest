@@ -1,0 +1,240 @@
+/* ============================================
+   CODEQUEST - ANIMATIONS
+   ============================================ */
+
+/* === PAGE TRANSITIONS === */
+.page-enter {
+  animation: pageEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* === FADE IN === */
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+.fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards; }
+.fade-in-left { animation: fadeInLeft 0.5s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Staggered children */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.12s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.19s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.26s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.33s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.40s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.47s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.54s; }
+
+/* === XP GAIN ANIMATION === */
+.xp-float {
+  position: fixed;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 20px rgba(255,230,0,0.5);
+  pointer-events: none;
+  z-index: 999;
+  animation: xpFloat 1.5s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+@keyframes xpFloat {
+  0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+  30%  { opacity: 1; transform: translateY(-20px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
+}
+
+/* === CONFETTI SYSTEM (canvas-based, see animations.js) === */
+
+/* === ACHIEVEMENT UNLOCK === */
+.achievement-popup {
+  position: fixed;
+  top: 6rem;
+  right: 2rem;
+  z-index: 400;
+  background: linear-gradient(135deg, rgba(13,20,40,0.95), rgba(20,30,60,0.95));
+  border: 1px solid var(--neon-yellow);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  box-shadow: 0 0 40px rgba(255,230,0,0.3), var(--shadow-lg);
+  animation: achievementSlide 4s cubic-bezier(0.16,1,0.3,1) forwards;
+  max-width: 380px;
+  backdrop-filter: blur(20px);
+}
+
+.achievement-popup .ach-icon {
+  font-size: 2.5rem;
+  animation: achievementBounce 0.6s 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes achievementSlide {
+  0%   { opacity: 0; transform: translateX(120px) scale(0.8); }
+  10%  { opacity: 1; transform: translateX(0) scale(1); }
+  85%  { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(120px); }
+}
+
+@keyframes achievementBounce {
+  from { transform: scale(0) rotate(-20deg); }
+  to   { transform: scale(1) rotate(0); }
+}
+
+/* === PULSE GLOW === */
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(79,138,255,0.3); }
+  50%       { box-shadow: 0 0 25px rgba(79,138,255,0.6), 0 0 50px rgba(79,138,255,0.2); }
+}
+
+/* === STREAK FIRE === */
+.streak-fire {
+  display: inline-block;
+  animation: fireShake 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes fireShake {
+  from { transform: rotate(-5deg) scale(1); }
+  to   { transform: rotate(5deg) scale(1.1); }
+}
+
+/* === CORRECT ANSWER === */
+.correct-flash {
+  animation: correctFlash 0.6s ease forwards;
+}
+
+@keyframes correctFlash {
+  0%   { background: var(--bg-card); }
+  30%  { background: rgba(0,255,136,0.2); box-shadow: 0 0 20px rgba(0,255,136,0.3); }
+  100% { background: var(--bg-card); }
+}
+
+/* === WRONG ANSWER === */
+.wrong-shake {
+  animation: wrongShake 0.5s ease forwards;
+}
+
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-6px); }
+  80%       { transform: translateX(4px); }
+}
+
+/* === LOADING DOTS === */
+.loading-dots span {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: dotPulse 1.4s ease-in-out infinite both;
+}
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40%            { transform: scale(1.2); opacity: 1; }
+}
+
+/* === FLOATING PARTICLES (canvas-based) === */
+
+/* === NODE COMPLETE === */
+.node-complete-burst {
+  animation: nodeBurst 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+@keyframes nodeBurst {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); box-shadow: 0 0 40px var(--neon-green); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* === HOVER LIFT === */
+.hover-lift {
+  transition: transform var(--transition-spring), box-shadow var(--transition-base);
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow);
+}
+
+/* === NUMBER COUNTER ANIMATION === */
+.count-up {
+  display: inline-block;
+  animation: countUp 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+
+@keyframes countUp {
+  from { transform: scale(1.4); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* === GLOW TEXT === */
+.glow-text {
+  text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+}
+
+/* === SCAN LINE (code editor effect) === */
+@keyframes scanLine {
+  from { background-position: 0 0; }
+  to   { background-position: 0 100px; }
+}
+
+/* === ROAD MAP NODE ANIMATIONS === */
+.roadmap-node {
+  transition: all var(--transition-spring);
+}
+.roadmap-node:hover {
+  transform: scale(1.05);
+}
+.roadmap-node.completed {
+  animation: nodeComplete 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes nodeComplete {
+  0%   { transform: scale(0.8); opacity: 0; }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+/* === TYPING CURSOR === */
+.typing-cursor::after {
+  content: '|';
+  color: var(--neon-cyan);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%        { opacity: 0; }
+}

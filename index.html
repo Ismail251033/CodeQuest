@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeQuest — Learn to Code, Level Up Your Life</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/landing.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav" id="nav">
+  <a class="nav-logo" href="index.html">Code<span>Quest</span></a>
+  <div class="nav-links">
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#languages" class="nav-link">Languages</a>
+    <a href="profile.html" class="nav-link" id="navProfile" style="display:none">My Profile</a>
+    <a href="roadmap.html" class="btn btn-primary btn-sm" id="navContinue" style="display:none">Continue Learning</a>
+    <a href="questionnaire.html" class="btn btn-primary btn-sm" id="navStart">Start Free</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <canvas class="hero-canvas" id="particleCanvas"></canvas>
+
+  <div class="container" style="width:100%;">
+    <div class="hero-content page-enter">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Personalized AI-Powered Coding Education
+      </div>
+
+      <h1>
+        Learn to Code.<br>
+        <span class="gradient-text">Level Up Your Life.</span>
+      </h1>
+
+      <p>Master programming step-by-step with intelligent feedback, adaptive exercises, and a personalized roadmap built for your goals. Like having a coding mentor available 24/7.</p>
+
+      <div class="hero-cta">
+        <a href="questionnaire.html" class="btn btn-primary btn-lg" id="heroStart">
+          <span>🚀</span> Start Learning Free
+        </a>
+        <a href="#features" class="btn btn-secondary btn-lg">
+          <span>✨</span> See How It Works
+        </a>
+      </div>
+
+      <div class="hero-stats stagger-children">
+        <div class="hero-stat">
+          <div class="value">7</div>
+          <div class="label">Languages</div>
+        </div>
+        <div class="hero-stat">
+          <div class="value">150+</div>
+          <div class="label">Exercises</div>
+        </div>
+        <div class="hero-stat">
+          <div class="value">100%</div>
+          <div class="label">Free to use</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terminal visual -->
+    <div class="hero-visual">
+      <div class="hero-terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot"></div>
+          <div class="terminal-dot"></div>
+          <div class="terminal-dot"></div>
+          <div class="terminal-title">codequest ~ lesson.js</div>
+        </div>
+        <div class="terminal-body" id="terminalBody">
+          <div class="terminal-line"><span class="terminal-prompt">→</span><span class="terminal-cmd" id="terminalText"></span><span class="typing-cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features-section" id="features">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Why CodeQuest</span>
+      <h2>Not just exercises.<br>Real learning.</h2>
+      <p style="max-width:520px;margin:var(--space-md) auto 0;">We built CodeQuest to actually teach you programming — not just test if you already know it.</p>
+    </div>
+
+    <div class="features-grid stagger-children">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(79,138,255,0.12);">🎯</div>
+        <h4>Personalized Roadmap</h4>
+        <p>Your path adapts to your level, goals, and performance. Weak on loops? We'll focus there.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(0,245,255,0.1);">🧠</div>
+        <h4>Intelligent Corrections</h4>
+        <p>We don't just say "wrong". We explain WHY, show the correct logic, and give a similar example.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(0,255,136,0.1);">⚡</div>
+        <h4>Live Code Runner</h4>
+        <p>Write and run JavaScript right in the browser. See outputs, catch errors, learn by doing.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(168,85,247,0.12);">🏆</div>
+        <h4>XP & Gamification</h4>
+        <p>Earn XP, maintain streaks, unlock achievements, and climb the ranks as you master topics.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(255,107,0,0.1);">📊</div>
+        <h4>Mastery Tracking</h4>
+        <p>Topics go from "Learning" to "Mastered" based on your actual performance — not just completion.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(255,230,0,0.08);">🔥</div>
+        <h4>Daily Streaks</h4>
+        <p>Build the coding habit with daily streak tracking and rewards that keep you coming back.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Languages -->
+<section class="languages-section" id="languages">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">7 Languages</span>
+      <h2>Choose your path</h2>
+      <p>From web basics to systems programming — we've got you covered.</p>
+    </div>
+
+    <div class="languages-grid stagger-children">
+      <div class="lang-card lang-js" onclick="startLang('javascript')">
+        <span class="lang-emoji">🟨</span>
+        <span class="lang-name">JavaScript</span>
+      </div>
+      <div class="lang-card lang-python" onclick="startLang('python')">
+        <span class="lang-emoji">🐍</span>
+        <span class="lang-name">Python</span>
+      </div>
+      <div class="lang-card lang-cpp" onclick="startLang('cpp')">
+        <span class="lang-emoji">🔵</span>
+        <span class="lang-name">C++</span>
+      </div>
+      <div class="lang-card lang-c" onclick="startLang('c')">
+        <span class="lang-emoji">⚡</span>
+        <span class="lang-name">C</span>
+      </div>
+      <div class="lang-card lang-java" onclick="startLang('java')">
+        <span class="lang-emoji">☕</span>
+        <span class="lang-name">Java</span>
+      </div>
+      <div class="lang-card lang-html" onclick="startLang('html')">
+        <span class="lang-emoji">🎨</span>
+        <span class="lang-name">HTML & CSS</span>
+      </div>
+      <div class="lang-card lang-sql" onclick="startLang('sql')">
+        <span class="lang-emoji">🗃️</span>
+        <span class="lang-name">SQL</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Community</span>
+      <h2>Loved by learners</h2>
+    </div>
+
+    <div class="testimonials-grid stagger-children">
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The correction system is incredible. Instead of just 'wrong', it walks me through exactly what I misunderstood. I've learned more here in a week than months of YouTube tutorials."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">👩‍💻</div>
+          <div>
+            <div class="testimonial-name">Sarah Chen</div>
+            <div class="testimonial-handle">Frontend Dev Student</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The personalized roadmap is a game-changer. It detected I was weak on loops and restructured my path automatically. It's like having a personal tutor."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">👨‍🎓</div>
+          <div>
+            <div class="testimonial-name">Marcus Rivera</div>
+            <div class="testimonial-handle">Computer Science Student</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"I've tried Codecademy, freeCodeCamp, and others. CodeQuest actually explains WHY things work the way they do. The gamification keeps me coming back daily."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">🧑‍💻</div>
+          <div>
+            <div class="testimonial-name">Alex Patel</div>
+            <div class="testimonial-handle">Career Changer → Dev</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-box">
+      <h2>Ready to become a developer?</h2>
+      <p style="margin:var(--space-md) auto;max-width:480px;">Start your personalized coding journey today. No credit card. No fluff. Just real learning.</p>
+      <a href="questionnaire.html" class="btn btn-primary btn-lg" style="margin-top:var(--space-lg);">
+        🚀 Start Learning for Free
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <p>CodeQuest — Learn to code, level up your life. Built with ❤️ for learners everywhere.</p>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script>
+(function() {
+  // Check if user already has a profile
+  const profile = Storage.getProfile();
+  if (profile && profile.language) {
+    document.getElementById('navProfile').style.display = 'inline-flex';
+    document.getElementById('navContinue').style.display = 'inline-flex';
+    document.getElementById('navStart').style.display = 'none';
+  }
+
+  // Hero terminal typing animation
+  const lines = [
+    { text: 'const dream = "become a developer";', delay: 500 },
+    { text: 'let skills = [];', delay: 1800 },
+    { text: 'skills.push("JavaScript");', delay: 2600 },
+    { text: 'skills.push("Problem Solving");', delay: 3500 },
+    { text: 'console.log("You\'ve got this! 🚀");', delay: 4400 },
+  ];
+
+  const terminalBody = document.getElementById('terminalBody');
+  let lineIdx = 0;
+
+  function typeNextLine() {
+    if (lineIdx >= lines.length) return;
+    const { text, delay } = lines[lineIdx];
+    lineIdx++;
+
+    setTimeout(() => {
+      const line = document.createElement('div');
+      line.className = 'terminal-line';
+      line.innerHTML = `<span class="terminal-prompt">→</span><span class="terminal-output">${text}</span>`;
+      // Insert before the cursor line
+      const cursorLine = terminalBody.querySelector('.typing-cursor')?.closest('.terminal-line');
+      if (cursorLine) terminalBody.insertBefore(line, cursorLine);
+      else terminalBody.appendChild(line);
+      typeNextLine();
+    }, delay);
+  }
+
+  typeNextLine();
+
+  // Particles
+  ParticlesBg.init('particleCanvas');
+
+  // Language click → questionnaire with pre-selected lang
+  window.startLang = function(lang) {
+    window.location.href = `questionnaire.html?lang=${lang}`;
+  };
+})();
+</script>
+</body>
+</html>

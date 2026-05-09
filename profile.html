@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeQuest — My Profile</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">Code<span>Quest</span></a>
+  <div class="nav-links">
+    <div id="navXp"></div>
+    <a href="roadmap.html" class="nav-link">Roadmap</a>
+    <a href="profile.html" class="nav-link active" data-page="profile">Profile</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="container">
+
+    <div class="profile-grid page-enter">
+
+      <!-- LEFT SIDEBAR -->
+      <div class="profile-sidebar">
+
+        <!-- Profile Card -->
+        <div class="profile-card glass-card">
+          <div class="profile-avatar" id="profileAvatar">🧑‍💻</div>
+          <h2 class="profile-name" id="profileName">Loading...</h2>
+          <div class="profile-rank" id="profileRank">⚡ Novice Coder</div>
+
+          <div class="stats-grid-profile" style="margin-top:var(--space-lg);">
+            <div class="stat-box">
+              <span class="value" style="color:var(--neon-yellow);" id="statXP">0</span>
+              <div class="label">Total XP</div>
+            </div>
+            <div class="stat-box">
+              <span class="value" style="color:var(--primary);" id="statLevel">1</span>
+              <div class="label">Level</div>
+            </div>
+            <div class="stat-box">
+              <span class="value" style="color:var(--neon-orange);" id="statStreak">0</span>
+              <div class="label">Day Streak</div>
+            </div>
+            <div class="stat-box">
+              <span class="value" style="color:var(--neon-green);" id="statMaxStreak">0</span>
+              <div class="label">Max Streak</div>
+            </div>
+          </div>
+
+          <!-- XP bar to next level -->
+          <div style="margin-top:var(--space-lg);">
+            <div class="flex-between" style="font-size:0.8rem;margin-bottom:6px;">
+              <span style="color:var(--text-muted);">Level Progress</span>
+              <span id="levelPctLabel" style="color:var(--primary);">0%</span>
+            </div>
+            <div class="progress-bar" style="height:8px;">
+              <div class="progress-fill" id="levelBar" style="width:0%"></div>
+            </div>
+            <div class="flex-between" style="font-size:0.75rem;margin-top:4px;color:var(--text-muted);">
+              <span id="levelXpCurrent">0 XP</span>
+              <span id="levelXpNext">500 XP to Level 2</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Language card -->
+        <div class="glass-card" style="padding:var(--space-lg);">
+          <h4 style="font-size:0.9rem;margin-bottom:var(--space-md);color:var(--text-secondary);">CURRENT LANGUAGE</h4>
+          <div id="langCard" style="text-align:center;padding:var(--space-md);">
+            <div style="font-size:2.5rem;margin-bottom:6px;" id="langEmoji">🟨</div>
+            <div style="font-weight:700;" id="langName">JavaScript</div>
+            <div style="font-size:0.82rem;color:var(--text-muted);" id="langLevel">Beginner</div>
+          </div>
+          <div style="margin-top:var(--space-md);">
+            <div class="flex-between" style="font-size:0.8rem;margin-bottom:6px;">
+              <span style="color:var(--text-muted);">Course Progress</span>
+              <span id="coursePct" style="color:var(--primary);">0%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="courseBar" style="width:0%"></div>
+            </div>
+          </div>
+          <a href="questionnaire.html" class="btn btn-ghost btn-sm" style="width:100%;margin-top:var(--space-md);justify-content:center;">🔄 Switch Language</a>
+        </div>
+
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+
+        <!-- Stats row -->
+        <div class="grid-4">
+          <div class="glass-card" style="padding:var(--space-lg);text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:var(--primary);" id="statLessons">0</div>
+            <div style="font-size:0.82rem;color:var(--text-muted);">Lessons Done</div>
+          </div>
+          <div class="glass-card" style="padding:var(--space-lg);text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:var(--neon-green);" id="statChallenges">0</div>
+            <div style="font-size:0.82rem;color:var(--text-muted);">Challenges Done</div>
+          </div>
+          <div class="glass-card" style="padding:var(--space-lg);text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:var(--neon-cyan);" id="statTopics">0</div>
+            <div style="font-size:0.82rem;color:var(--text-muted);">Topics Started</div>
+          </div>
+          <div class="glass-card" style="padding:var(--space-lg);text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:var(--neon-yellow);" id="statDays">0</div>
+            <div style="font-size:0.82rem;color:var(--text-muted);">Days Active</div>
+          </div>
+        </div>
+
+        <!-- Activity Heatmap -->
+        <div class="glass-card" style="padding:var(--space-xl);">
+          <h3 style="margin-bottom:var(--space-md);">📅 Activity Heatmap</h3>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:var(--space-md);">Your coding activity over the last year</p>
+          <div class="heatmap-grid" id="heatmapGrid"></div>
+          <div class="flex gap-md" style="margin-top:var(--space-md);align-items:center;">
+            <span style="font-size:0.78rem;color:var(--text-muted);">Less</span>
+            <div style="width:12px;height:12px;border-radius:2px;background:var(--bg-glass);border:1px solid var(--border);"></div>
+            <div style="width:12px;height:12px;border-radius:2px;background:rgba(79,138,255,0.2);"></div>
+            <div style="width:12px;height:12px;border-radius:2px;background:rgba(79,138,255,0.45);"></div>
+            <div style="width:12px;height:12px;border-radius:2px;background:rgba(79,138,255,0.7);"></div>
+            <div style="width:12px;height:12px;border-radius:2px;background:rgba(79,138,255,0.95);"></div>
+            <span style="font-size:0.78rem;color:var(--text-muted);">More</span>
+          </div>
+        </div>
+
+        <!-- Weak / Strong topics -->
+        <div class="grid-2">
+          <div class="glass-card" style="padding:var(--space-xl);">
+            <h3 style="margin-bottom:var(--space-md);">💪 Strong Topics</h3>
+            <div id="strongTopics">
+              <p style="color:var(--text-muted);font-size:0.9rem;">Complete challenges to see your strengths!</p>
+            </div>
+          </div>
+          <div class="glass-card" style="padding:var(--space-xl);">
+            <h3 style="margin-bottom:var(--space-md);">🎯 Areas to Improve</h3>
+            <div id="weakTopics">
+              <p style="color:var(--text-muted);font-size:0.9rem;">Keep practicing to identify weak spots!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mastery Map -->
+        <div class="glass-card" style="padding:var(--space-xl);">
+          <h3 style="margin-bottom:var(--space-lg);">🗺️ Topic Mastery</h3>
+          <div id="masteryMap" style="display:flex;flex-direction:column;gap:var(--space-md);"></div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="glass-card" style="padding:var(--space-xl);">
+          <h3 style="margin-bottom:var(--space-md);">🏆 Achievements</h3>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:var(--space-lg);" id="achSubtitle">Loading...</p>
+          <div class="achievements-grid" id="achievementsGrid"></div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="glass-card" style="padding:var(--space-xl);border-color:rgba(255,0,153,0.15);">
+          <h4 style="margin-bottom:var(--space-sm);color:var(--neon-pink);">⚠️ Danger Zone</h4>
+          <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:var(--space-md);">Reset all your progress. This cannot be undone.</p>
+          <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Progress</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Confirm Modal -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:3rem;margin-bottom:var(--space-md);">⚠️</div>
+    <h3>Reset All Progress?</h3>
+    <p style="margin:var(--space-md) 0;color:var(--text-secondary);">This will delete ALL your XP, streaks, completed lessons, and achievements. You'll start from scratch.</p>
+    <div class="flex gap-md" style="justify-content:center;margin-top:var(--space-xl);">
+      <button class="btn btn-ghost" onclick="Modal.close('resetModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="doReset()">Yes, Reset Everything</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/adaptiveLearning.js"></script>
+<script src="data/javascript.js"></script>
+<script src="data/python.js"></script>
+<script src="data/other-languages.js"></script>
+<script>
+(function() {
+  const profile = Storage.getProfile();
+  if (!profile.language) { window.location.href = 'questionnaire.html'; return; }
+
+  const lang   = profile.language;
+  const course = COURSES[lang];
+
+  // Nav
+  document.getElementById('navXp').innerHTML = Nav.renderXP(profile.xp, profile.level_num);
+
+  // Profile card
+  document.getElementById('profileName').textContent = profile.name || 'Coder';
+  document.getElementById('profileRank').innerHTML   = `⚡ ${profile.rank}`;
+  ProgressUI.countUp(document.getElementById('statXP'), profile.totalXp || 0);
+  ProgressUI.countUp(document.getElementById('statLevel'), profile.level_num || 1);
+  ProgressUI.countUp(document.getElementById('statStreak'), profile.streak || 0);
+  ProgressUI.countUp(document.getElementById('statMaxStreak'), profile.maxStreak || 0);
+
+  // XP progress to next level
+  const xpThisLevel = (profile.totalXp || 0) % 500;
+  const xpPct       = Math.round((xpThisLevel / 500) * 100);
+  document.getElementById('levelPctLabel').textContent = xpPct + '%';
+  document.getElementById('levelXpCurrent').textContent = xpThisLevel + ' XP';
+  document.getElementById('levelXpNext').textContent    = `${500 - xpThisLevel} XP to Level ${(profile.level_num || 1) + 1}`;
+  ProgressUI.animateBar(document.getElementById('levelBar'), xpPct);
+
+  // Language card
+  if (course) {
+    document.getElementById('langEmoji').textContent = course.emoji;
+    document.getElementById('langName').textContent  = course.name;
+    document.getElementById('langLevel').textContent = profile.level?.charAt(0).toUpperCase() + profile.level?.slice(1) || 'Beginner';
+    const coursePct = AdaptiveLearning.getCourseProgress(lang);
+    document.getElementById('coursePct').textContent = coursePct + '%';
+    ProgressUI.animateBar(document.getElementById('courseBar'), coursePct);
+  }
+
+  // Aggregate stats from progress
+  const progress = Storage.getProgress()[lang] || {};
+  let totalLessons = 0, totalChallenges = 0, topicsStarted = 0;
+
+  for (const topicId of Object.keys(progress)) {
+    const tp = progress[topicId];
+    totalLessons    += (tp.lessonsCompleted || []).length;
+    totalChallenges += (tp.challengesCompleted || []).length;
+    if ((tp.lessonsCompleted || []).length > 0 || (tp.challengesCompleted || []).length > 0) topicsStarted++;
+  }
+
+  ProgressUI.countUp(document.getElementById('statLessons'),    totalLessons);
+  ProgressUI.countUp(document.getElementById('statChallenges'), totalChallenges);
+  ProgressUI.countUp(document.getElementById('statTopics'),     topicsStarted);
+
+  // Days active
+  const activityLog = Storage.get('cq_activity_log') || [];
+  const uniqueDays  = new Set(activityLog.map(l => l.date)).size;
+  ProgressUI.countUp(document.getElementById('statDays'), uniqueDays);
+
+  // Heatmap
+  renderHeatmap();
+
+  // Mastery map
+  renderMasteryMap();
+
+  // Strong / weak topics
+  renderTopicAnalysis();
+
+  // Achievements
+  renderAchievements();
+
+  function renderHeatmap() {
+    const grid     = document.getElementById('heatmapGrid');
+    const heatmap  = Storage.getActivityHeatmap();
+    const today    = new Date();
+    const cells    = [];
+
+    for (let i = 364; i >= 0; i--) {
+      const d = new Date(today - i * 86400000);
+      const dateStr = d.toDateString();
+      const count   = heatmap[dateStr] || 0;
+      const level   = count === 0 ? 0 : count < 3 ? 1 : count < 6 ? 2 : count < 10 ? 3 : 4;
+      cells.push(`<div class="heat-cell" data-level="${level}" title="${dateStr}: ${count} activities"></div>`);
+    }
+
+    grid.innerHTML = cells.join('');
+  }
+
+  function renderMasteryMap() {
+    const container = document.getElementById('masteryMap');
+    if (!course) return;
+
+    container.innerHTML = course.topics.map(topic => {
+      const tp = Storage.getTopicProgress(lang, topic.id);
+      const mastery = AdaptiveLearning.calculateMastery(tp);
+      const masteryInfo = MASTERY.getLevel(mastery);
+      return `
+        <div style="display:flex;align-items:center;gap:var(--space-lg);">
+          <div style="width:140px;font-size:0.9rem;font-weight:600;flex-shrink:0;">
+            ${topic.emoji} ${topic.title}
+          </div>
+          <div style="flex:1;">
+            <div class="progress-bar" style="height:10px;">
+              <div class="progress-fill" style="width:${mastery}%;background:${masteryInfo.color};" ></div>
+            </div>
+          </div>
+          <div style="width:120px;text-align:right;font-size:0.82rem;color:${masteryInfo.color};">
+            ${masteryInfo.icon} ${masteryInfo.label} (${mastery}%)
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderTopicAnalysis() {
+    const strong = AdaptiveLearning.getStrongTopics(lang);
+    const weak   = AdaptiveLearning.getWeakTopics(lang);
+
+    const strongEl = document.getElementById('strongTopics');
+    const weakEl   = document.getElementById('weakTopics');
+
+    if (strong.length === 0) {
+      strongEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;">Keep completing challenges!</p>';
+    } else {
+      strongEl.innerHTML = strong.map(t => `
+        <div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
+          <span>${t.emoji}</span>
+          <span style="flex:1;font-size:0.9rem;">${t.title}</span>
+          <span style="color:var(--neon-green);font-weight:700;font-size:0.85rem;">${t.mastery}%</span>
+        </div>
+      `).join('');
+    }
+
+    if (weak.length === 0) {
+      weakEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;">No weak spots detected yet!</p>';
+    } else {
+      weakEl.innerHTML = weak.map(t => `
+        <div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
+          <span>${t.emoji}</span>
+          <span style="flex:1;font-size:0.9rem;">${t.title}</span>
+          <a href="lesson.html?lang=${lang}&topic=${t.topicId}" style="color:var(--primary);font-size:0.82rem;">Review →</a>
+        </div>
+      `).join('');
+    }
+  }
+
+  function renderAchievements() {
+    const earned = Storage.getAchievements();
+    const grid   = document.getElementById('achievementsGrid');
+    const subtitle = document.getElementById('achSubtitle');
+
+    subtitle.textContent = `${earned.length} / ${ACHIEVEMENTS_DEF.length} unlocked`;
+
+    grid.innerHTML = ACHIEVEMENTS_DEF.map(ach => {
+      const isEarned = earned.includes(ach.id);
+      return `
+        <div class="achievement-item ${isEarned ? 'earned' : 'locked'}" title="${ach.desc}">
+          <span class="ach-emoji">${ach.emoji}</span>
+          <div class="ach-name">${ach.name}</div>
+          <div class="ach-desc">${isEarned ? ach.desc : '???'}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.confirmReset = function() { Modal.open('resetModal'); };
+
+  window.doReset = function() {
+    Storage.clear();
+    Toast.success('Progress reset. Starting fresh!');
+    setTimeout(() => window.location.href = 'index.html', 1000);
+  };
+
+})();
+</script>
+</body>
+</html>

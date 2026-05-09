@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeQuest — Get Started</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">Code<span>Quest</span></a>
+</nav>
+
+<div class="page-wrapper">
+  <div class="container">
+    <div class="questionnaire-wrapper">
+
+      <!-- Progress indicator -->
+      <div class="q-progress" id="qProgress">
+        <div class="flex-between" style="margin-bottom:var(--space-sm);">
+          <span style="font-size:0.85rem;color:var(--text-secondary);" id="stepLabel">Step 1 of 5</span>
+          <span style="font-size:0.85rem;color:var(--primary);" id="stepPct">20%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width:20%"></div>
+        </div>
+      </div>
+
+      <!-- STEP 1: Language -->
+      <div class="q-step active" id="step1">
+        <div class="hero-badge" style="margin-bottom:var(--space-lg);">🎯 Quick Setup</div>
+        <h2 class="q-title">Which language do you want to learn?</h2>
+        <p class="q-subtitle">Don't worry — you can change this later or add more languages.</p>
+
+        <div class="options-grid" id="langOptions">
+          <div class="option-card" data-value="javascript">
+            <span class="option-emoji">🟨</span>
+            <span class="option-label">JavaScript</span>
+            <span class="option-desc">Web, apps, everything</span>
+          </div>
+          <div class="option-card" data-value="python">
+            <span class="option-emoji">🐍</span>
+            <span class="option-label">Python</span>
+            <span class="option-desc">Simple & powerful</span>
+          </div>
+          <div class="option-card" data-value="cpp">
+            <span class="option-emoji">🔵</span>
+            <span class="option-label">C++</span>
+            <span class="option-desc">Speed & performance</span>
+          </div>
+          <div class="option-card" data-value="c">
+            <span class="option-emoji">⚡</span>
+            <span class="option-label">C</span>
+            <span class="option-desc">Systems & embedded</span>
+          </div>
+          <div class="option-card" data-value="java">
+            <span class="option-emoji">☕</span>
+            <span class="option-label">Java</span>
+            <span class="option-desc">Enterprise & Android</span>
+          </div>
+          <div class="option-card" data-value="html">
+            <span class="option-emoji">🎨</span>
+            <span class="option-label">HTML & CSS</span>
+            <span class="option-desc">Build websites</span>
+          </div>
+          <div class="option-card" data-value="sql">
+            <span class="option-emoji">🗃️</span>
+            <span class="option-label">SQL</span>
+            <span class="option-desc">Query databases</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn1" disabled onclick="nextStep()">Continue →</button>
+      </div>
+
+      <!-- STEP 2: Level -->
+      <div class="q-step" id="step2">
+        <div class="hero-badge" style="margin-bottom:var(--space-lg);">📊 Your Level</div>
+        <h2 class="q-title">What's your current level?</h2>
+        <p class="q-subtitle">Be honest — we'll use this to calibrate your starting point.</p>
+
+        <div class="options-grid" id="levelOptions">
+          <div class="option-card" data-value="beginner">
+            <span class="option-emoji">🌱</span>
+            <span class="option-label">Beginner</span>
+            <span class="option-desc">Just starting out</span>
+          </div>
+          <div class="option-card" data-value="intermediate">
+            <span class="option-emoji">🌿</span>
+            <span class="option-label">Intermediate</span>
+            <span class="option-desc">Know the basics</span>
+          </div>
+          <div class="option-card" data-value="advanced">
+            <span class="option-emoji">🌳</span>
+            <span class="option-label">Advanced</span>
+            <span class="option-desc">Looking to level up</span>
+          </div>
+        </div>
+
+        <div class="flex gap-md">
+          <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+          <button class="btn btn-primary" id="btn2" disabled onclick="nextStep()">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Goals -->
+      <div class="q-step" id="step3">
+        <div class="hero-badge" style="margin-bottom:var(--space-lg);">🎯 Your Goals</div>
+        <h2 class="q-title">What are your learning goals?</h2>
+        <p class="q-subtitle">Select all that apply — we'll tailor your roadmap accordingly.</p>
+
+        <div class="options-grid" id="goalsOptions">
+          <div class="option-card multi" data-value="web">
+            <span class="option-emoji">🌐</span>
+            <span class="option-label">Web Development</span>
+            <span class="option-desc">Build websites & apps</span>
+          </div>
+          <div class="option-card multi" data-value="algorithms">
+            <span class="option-emoji">🧮</span>
+            <span class="option-label">Algorithms</span>
+            <span class="option-desc">Problem solving & CS</span>
+          </div>
+          <div class="option-card multi" data-value="gamedev">
+            <span class="option-emoji">🎮</span>
+            <span class="option-label">Game Dev</span>
+            <span class="option-desc">Build games</span>
+          </div>
+          <div class="option-card multi" data-value="school">
+            <span class="option-emoji">🎓</span>
+            <span class="option-label">School / University</span>
+            <span class="option-desc">Ace your classes</span>
+          </div>
+          <div class="option-card multi" data-value="career">
+            <span class="option-emoji">💼</span>
+            <span class="option-label">Career Change</span>
+            <span class="option-desc">Get a dev job</span>
+          </div>
+          <div class="option-card multi" data-value="personal">
+            <span class="option-emoji">💡</span>
+            <span class="option-label">Personal Projects</span>
+            <span class="option-desc">Build something cool</span>
+          </div>
+        </div>
+
+        <div class="flex gap-md">
+          <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+          <button class="btn btn-primary" id="btn3" disabled onclick="nextStep()">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Study time -->
+      <div class="q-step" id="step4">
+        <div class="hero-badge" style="margin-bottom:var(--space-lg);">⏰ Your Schedule</div>
+        <h2 class="q-title">How much time can you study daily?</h2>
+        <p class="q-subtitle">Consistency beats intensity. Even 15 minutes a day adds up!</p>
+
+        <div class="options-grid" style="grid-template-columns:repeat(2,1fr);" id="timeOptions">
+          <div class="option-card" data-value="15">
+            <span class="option-emoji">⚡</span>
+            <span class="option-label">15 min / day</span>
+            <span class="option-desc">Just getting started</span>
+          </div>
+          <div class="option-card" data-value="30">
+            <span class="option-emoji">🔥</span>
+            <span class="option-label">30 min / day</span>
+            <span class="option-desc">Casual learning</span>
+          </div>
+          <div class="option-card" data-value="60">
+            <span class="option-emoji">💪</span>
+            <span class="option-label">1 hour / day</span>
+            <span class="option-desc">Serious learner</span>
+          </div>
+          <div class="option-card" data-value="120">
+            <span class="option-emoji">🚀</span>
+            <span class="option-label">2+ hours / day</span>
+            <span class="option-desc">Intensive mode</span>
+          </div>
+        </div>
+
+        <div class="flex gap-md">
+          <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+          <button class="btn btn-primary" id="btn4" disabled onclick="nextStep()">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: Name -->
+      <div class="q-step" id="step5">
+        <div class="hero-badge" style="margin-bottom:var(--space-lg);">👤 Almost Done!</div>
+        <h2 class="q-title">What should we call you?</h2>
+        <p class="q-subtitle">Your name will appear on your profile and leaderboards.</p>
+
+        <div style="margin-bottom:var(--space-xl);">
+          <input
+            type="text"
+            id="nameInput"
+            placeholder="Enter your name or nickname..."
+            maxlength="30"
+            style="width:100%;padding:1rem 1.5rem;background:var(--bg-card);border:2px solid var(--border);border-radius:var(--radius-lg);color:var(--text-primary);font-family:var(--font-body);font-size:1.1rem;outline:none;transition:all var(--transition-base);"
+            oninput="onNameInput(this)"
+          >
+        </div>
+
+        <div class="flex gap-md">
+          <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+          <button class="btn btn-primary btn-lg" id="btn5" disabled onclick="finishQuestionnaire()">
+            🚀 Build My Roadmap
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script>
+(function() {
+  let currentStep = 1;
+  const TOTAL = 5;
+
+  const answers = {
+    language: null,
+    level: null,
+    goals: [],
+    studyTime: null,
+    name: 'Coder',
+  };
+
+  // Pre-select language from URL param
+  const params = new URLSearchParams(window.location.search);
+  const preLang = params.get('lang');
+  if (preLang) {
+    setTimeout(() => {
+      const card = document.querySelector(`[data-value="${preLang}"]`);
+      if (card) card.click();
+    }, 100);
+  }
+
+  // Single-select option cards
+  document.querySelectorAll('#langOptions .option-card, #levelOptions .option-card, #timeOptions .option-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const group = this.closest('.options-grid');
+      group.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+      this.classList.add('selected');
+
+      const val = this.dataset.value;
+      if (group.id === 'langOptions')  { answers.language = val; document.getElementById('btn1').disabled = false; }
+      if (group.id === 'levelOptions') { answers.level = val;    document.getElementById('btn2').disabled = false; }
+      if (group.id === 'timeOptions')  { answers.studyTime = parseInt(val); document.getElementById('btn4').disabled = false; }
+    });
+  });
+
+  // Multi-select goals
+  document.querySelectorAll('#goalsOptions .option-card').forEach(card => {
+    card.addEventListener('click', function() {
+      this.classList.toggle('selected');
+      answers.goals = [...document.querySelectorAll('#goalsOptions .option-card.selected')].map(c => c.dataset.value);
+      document.getElementById('btn3').disabled = answers.goals.length === 0;
+    });
+  });
+
+  window.onNameInput = function(input) {
+    input.style.borderColor = input.value.trim().length > 0 ? 'var(--primary)' : 'var(--border)';
+    document.getElementById('btn5').disabled = input.value.trim().length === 0;
+    answers.name = input.value.trim();
+  };
+
+  window.nextStep = function() {
+    if (currentStep < TOTAL) {
+      showStep(currentStep + 1);
+    }
+  };
+
+  window.prevStep = function() {
+    if (currentStep > 1) showStep(currentStep - 1);
+  };
+
+  function showStep(n) {
+    document.getElementById(`step${currentStep}`).classList.remove('active');
+    currentStep = n;
+    document.getElementById(`step${currentStep}`).classList.add('active');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const pct = Math.round((currentStep / TOTAL) * 100);
+    document.getElementById('stepLabel').textContent = `Step ${currentStep} of ${TOTAL}`;
+    document.getElementById('stepPct').textContent = pct + '%';
+    ProgressUI.animateBar(document.getElementById('progressFill'), pct);
+  }
+
+  window.finishQuestionnaire = function() {
+    // Save to storage
+    Storage.saveQuestionnaire(answers);
+    Storage.updateProfile({ name: answers.name });
+    Storage.updateStreak();
+
+    // Show brief loading
+    document.getElementById('btn5').textContent = 'Building your roadmap...';
+    document.getElementById('btn5').disabled = true;
+
+    setTimeout(() => {
+      window.location.href = 'roadmap.html';
+    }, 900);
+  };
+
+  // Style name input focus
+  const nameInput = document.getElementById('nameInput');
+  nameInput.addEventListener('focus', () => nameInput.style.borderColor = 'var(--primary)');
+  nameInput.addEventListener('blur',  () => { if (!nameInput.value) nameInput.style.borderColor = 'var(--border)'; });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeQuest — Challenge</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">Code<span>Quest</span></a>
+  <div class="nav-links">
+    <div id="navXp"></div>
+    <a href="roadmap.html" class="nav-link">← Roadmap</a>
+    <span id="timerDisplay" style="font-family:var(--font-code);color:var(--text-secondary);font-size:0.9rem;display:none;">⏱ <span id="timer">0:00</span></span>
+    <a href="profile.html" class="nav-link">Profile</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="container">
+
+    <!-- Challenge progress bar -->
+    <div style="position:sticky;top:60px;z-index:40;padding:var(--space-sm) 0;background:rgba(5,8,16,0.9);backdrop-filter:blur(10px);">
+      <div class="flex-between" style="margin-bottom:6px;">
+        <span style="font-size:0.82rem;color:var(--text-secondary);" id="challengeLabel">Challenge 1 of 1</span>
+        <div class="flex gap-md">
+          <span style="font-size:0.82rem;color:var(--neon-yellow);" id="scoreDisplay">Score: 0</span>
+          <span style="font-size:0.82rem;color:var(--primary);font-weight:700;" id="challengePct">0%</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="challengeBar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div id="challengeContainer"></div>
+
+  </div>
+</div>
+
+<!-- Challenge Complete Modal -->
+<div class="modal-overlay" id="completeModal">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:4rem;margin-bottom:var(--space-md);" id="completeEmoji">🎉</div>
+    <h2 id="completeTitle">Topic Complete!</h2>
+    <p id="completeMessage" style="margin:var(--space-md) 0;color:var(--text-secondary);"></p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);margin:var(--space-xl) 0;" id="completeStats"></div>
+    <div class="flex gap-md" style="justify-content:center;">
+      <button class="btn btn-secondary" onclick="window.location.href='roadmap.html'">Back to Roadmap</button>
+      <button class="btn btn-primary" onclick="window.location.href='profile.html'">View Profile</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/correctionEngine.js"></script>
+<script src="js/adaptiveLearning.js"></script>
+<script src="data/javascript.js"></script>
+<script src="data/python.js"></script>
+<script src="data/other-languages.js"></script>
+<script>
+(function() {
+  const params    = new URLSearchParams(window.location.search);
+  const lang      = params.get('lang');
+  const topicId   = params.get('topic');
+  const challengeId = params.get('id');
+
+  const profile = Storage.getProfile();
+  document.getElementById('navXp').innerHTML = Nav.renderXP(profile.xp, profile.level_num);
+
+  if (!lang || !topicId || !COURSES[lang]) { window.location.href = 'roadmap.html'; return; }
+
+  const course = COURSES[lang];
+  const topic  = course.topics.find(t => t.id === topicId);
+  if (!topic) { window.location.href = 'roadmap.html'; return; }
+
+  const challenges = topic.challenges || [];
+  if (challenges.length === 0) {
+    document.getElementById('challengeContainer').innerHTML = `
+      <div class="flex-center" style="height:300px;flex-direction:column;gap:var(--space-lg);">
+        <div style="font-size:3rem;">📭</div>
+        <h3>No challenges yet for this topic.</h3>
+        <a href="roadmap.html" class="btn btn-primary">Back to Roadmap</a>
+      </div>
+    `;
+    return;
+  }
+
+  let currentIdx = 0;
+  let totalScore = 0;
+  let timerStart = Date.now();
+  let timerInterval = null;
+  let hintsUsed = 0;
+  let hintsRevealed = 0;
+  let submitted = false;
+
+  // Start timer
+  function startTimer() {
+    timerStart = Date.now();
+    document.getElementById('timerDisplay').style.display = 'flex';
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - timerStart) / 1000);
+      const m = Math.floor(elapsed / 60);
+      const s = elapsed % 60;
+      document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    }, 1000);
+  }
+
+  function updateHeader() {
+    const pct = Math.round(((currentIdx) / challenges.length) * 100);
+    document.getElementById('challengeLabel').textContent = `Challenge ${currentIdx + 1} of ${challenges.length}`;
+    document.getElementById('challengePct').textContent = pct + '%';
+    document.getElementById('scoreDisplay').textContent = 'Score: ' + totalScore;
+    ProgressUI.animateBar(document.getElementById('challengeBar'), pct);
+  }
+
+  function renderChallenge(index) {
+    const ch = challenges[index];
+    submitted = false;
+    hintsRevealed = 0;
+    clearInterval(timerInterval);
+    startTimer();
+    updateHeader();
+
+    const container = document.getElementById('challengeContainer');
+
+    if (ch.type === 'multiple_choice') {
+      renderMultipleChoice(ch);
+    } else if (ch.type === 'coding' || ch.type === 'debugging') {
+      renderCodingChallenge(ch);
+    } else {
+      renderMultipleChoice(ch); // fallback
+    }
+  }
+
+  function renderMultipleChoice(ch) {
+    const container = document.getElementById('challengeContainer');
+    const options = ch.options || [];
+
+    container.innerHTML = `
+      <div class="page-enter" style="max-width:720px;margin:var(--space-xl) auto;">
+
+        <!-- Header -->
+        <div class="glass-card" style="padding:var(--space-xl);margin-bottom:var(--space-lg);">
+          <div class="flex gap-md" style="margin-bottom:var(--space-md);">
+            <span class="badge badge-purple">${ch.type.replace('_',' ')}</span>
+            <span class="badge badge-${ch.difficulty === 'hard' ? 'danger' : ch.difficulty === 'medium' ? 'warning' : 'success'}">${ch.difficulty}</span>
+            <span class="badge badge-primary">+${ch.xpReward} XP</span>
+          </div>
+          <h2 style="margin-bottom:var(--space-md);">${ch.title}</h2>
+          <p style="color:var(--text-secondary);">${ch.instructions}</p>
+
+          ${ch.code ? `<pre class="code-block" style="margin-top:var(--space-lg);">${SyntaxHighlighter.highlight(ch.code, lang)}</pre>` : ''}
+        </div>
+
+        <!-- Options -->
+        <div id="optionsContainer">
+          ${options.map((opt, i) => `
+            <div class="quiz-option" data-index="${i}" id="opt_${i}" onclick="selectMCOption(${i})">
+              <span style="width:28px;height:28px;border-radius:50%;background:var(--bg-glass);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;font-weight:700;">${String.fromCharCode(65+i)}</span>
+              <span>${opt}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Correction panel (hidden initially) -->
+        <div id="correctionPanelMC" style="display:none;margin-top:var(--space-lg);"></div>
+
+        <!-- Actions -->
+        <div class="flex gap-md" style="margin-top:var(--space-xl);">
+          <button class="btn btn-primary" id="submitBtnMC" onclick="submitMC()" disabled>Submit Answer</button>
+        </div>
+      </div>
+    `;
+
+    window._selectedMCIdx = null;
+  }
+
+  window.selectMCOption = function(i) {
+    if (submitted) return;
+    window._selectedMCIdx = i;
+    document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+    document.getElementById(`opt_${i}`).classList.add('selected');
+    document.getElementById('submitBtnMC').disabled = false;
+  };
+
+  window.submitMC = function() {
+    if (submitted || window._selectedMCIdx === null) return;
+    const ch = challenges[currentIdx];
+    submitted = true;
+
+    const result = CorrectionEngine.analyze(ch, window._selectedMCIdx);
+    showCorrectionMC(result, ch);
+  };
+
+  function showCorrectionMC(result, ch) {
+    // Style options
+    const correct = ch.correctIndex ?? ch.correct;
+    document.querySelectorAll('.quiz-option').forEach(opt => {
+      opt.style.pointerEvents = 'none';
+      const i = parseInt(opt.dataset.index);
+      if (i === correct) opt.classList.add('correct');
+      else if (i === window._selectedMCIdx && !result.isCorrect) opt.classList.add('wrong');
+    });
+
+    const panel = document.getElementById('correctionPanelMC');
+    panel.style.display = 'block';
+    panel.innerHTML = buildCorrectionHTML(result, ch);
+
+    if (result.isCorrect) {
+      totalScore += ch.xpReward;
+      const xpResult = Storage.addXP(ch.xpReward);
+      Storage.markChallengeComplete(lang, ch.relatedTopic || topicId, ch.id, 100);
+      XPAnimation.show(ch.xpReward);
+      Confetti.burst();
+      Achievements.check(xpResult.profile);
+      document.getElementById('navXp').innerHTML = Nav.renderXP(xpResult.profile.xp, xpResult.profile.level_num);
+    } else {
+      Storage.logMistake(lang, topicId, ch.id, { type: 'wrong_answer' });
+    }
+
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Show next/finish button
+    const actions = panel.querySelector('.correction-actions');
+    if (actions) {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-primary';
+      btn.textContent = currentIdx < challenges.length - 1 ? 'Next Challenge →' : '🎉 Finish';
+      btn.onclick = () => {
+        if (currentIdx < challenges.length - 1) {
+          currentIdx++;
+          renderChallenge(currentIdx);
+        } else {
+          showComplete();
+        }
+      };
+      actions.appendChild(btn);
+    }
+  }
+
+  function renderCodingChallenge(ch) {
+    const container = document.getElementById('challengeContainer');
+
+    container.innerHTML = `
+      <div class="page-enter">
+        <div class="challenge-layout">
+
+          <!-- Left: problem -->
+          <div class="challenge-left">
+            <div class="challenge-card">
+              <div class="challenge-title-bar">
+                <div>
+                  <div class="flex gap-sm" style="margin-bottom:var(--space-sm);">
+                    <span class="badge badge-purple">${ch.type.replace('_',' ')}</span>
+                    <span class="badge badge-${ch.difficulty === 'hard' ? 'danger' : ch.difficulty === 'medium' ? 'warning' : 'success'}">${ch.difficulty}</span>
+                    <span class="badge badge-primary">+${ch.xpReward} XP</span>
+                  </div>
+                  <h3>${ch.title}</h3>
+                </div>
+              </div>
+              <p style="color:var(--text-secondary);margin-bottom:var(--space-lg);">${ch.instructions}</p>
+            </div>
+
+            <!-- Hints -->
+            <div class="challenge-card">
+              <h4 style="margin-bottom:var(--space-md);font-size:0.9rem;">💡 Hints <span style="color:var(--text-muted);font-size:0.8rem;">(${(ch.hints||[]).length} available)</span></h4>
+              <div class="hints-container" id="hintsContainer">
+                ${(ch.hints || []).map((h, i) => `
+                  <div class="hint-item" id="hint_${i}" onclick="revealHint(${i})">
+                    <span class="hint-icon">💡</span>
+                    ${i <= hintsRevealed - 1 ? h : `Click to reveal hint ${i+1}...`}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Correction panel -->
+            <div id="correctionPanel" style="display:none;"></div>
+          </div>
+
+          <!-- Right: editor -->
+          <div class="challenge-right">
+            <div class="code-editor-wrapper">
+              <div class="editor-header">
+                <span>${lang === 'javascript' ? 'script.js' : lang === 'python' ? 'main.py' : 'main.' + lang}</span>
+                <div class="flex gap-sm">
+                  <button class="btn btn-ghost btn-sm" onclick="resetCode()" title="Reset">↺ Reset</button>
+                  <button class="btn btn-success btn-sm" onclick="runCode()">▶ Run</button>
+                </div>
+              </div>
+              <textarea class="code-textarea" id="codeEditor" spellcheck="false" placeholder="Write your code here...">${ch.starterCode || ''}</textarea>
+            </div>
+
+            <!-- Output -->
+            <div class="challenge-card">
+              <h4 style="margin-bottom:var(--space-sm);font-size:0.9rem;">📤 Output</h4>
+              <div class="output-box" id="outputBox">
+                <span style="color:var(--text-muted);">Run your code to see output...</span>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="flex gap-md">
+              <button class="btn btn-secondary" onclick="runCode()">▶ Run Code</button>
+              <button class="btn btn-primary" id="submitBtn" onclick="submitCode()">Submit Answer ✓</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    // Tab key in editor
+    document.getElementById('codeEditor').addEventListener('keydown', function(e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = this.selectionStart;
+        const end   = this.selectionEnd;
+        this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+        this.selectionStart = this.selectionEnd = start + 2;
+      }
+    });
+  }
+
+  window.revealHint = function(i) {
+    const ch = challenges[currentIdx];
+    if (i > hintsRevealed) return; // must reveal in order
+    const hints = ch.hints || [];
+    const el = document.getElementById(`hint_${i}`);
+    if (el) {
+      el.innerHTML = `<span class="hint-icon">💡</span>${hints[i]}`;
+      el.style.background = 'rgba(255,230,0,0.1)';
+    }
+    hintsRevealed = Math.max(hintsRevealed, i + 1);
+    hintsUsed++;
+  };
+
+  window.resetCode = function() {
+    const ch = challenges[currentIdx];
+    document.getElementById('codeEditor').value = ch.starterCode || '';
+    document.getElementById('outputBox').innerHTML = '<span style="color:var(--text-muted);">Run your code to see output...</span>';
+  };
+
+  window.runCode = function() {
+    const code   = document.getElementById('codeEditor').value;
+    const output = document.getElementById('outputBox');
+    const result = CorrectionEngine._safeRun(code);
+
+    if (result.error) {
+      output.innerHTML = `<span class="output-error">❌ ${result.error}</span>`;
+      const explained = CorrectionEngine._explainError(result.error, code);
+      output.innerHTML += `<br><span style="color:var(--text-secondary);font-size:0.82rem;margin-top:4px;display:block;">💡 ${explained}</span>`;
+    } else if (result.output) {
+      output.innerHTML = `<span style="color:var(--neon-green);">${escapeHTML(result.output)}</span>`;
+    } else {
+      output.innerHTML = `<span style="color:var(--text-muted);">(no output)</span>`;
+    }
+  };
+
+  window.submitCode = function() {
+    if (submitted) return;
+    const ch   = challenges[currentIdx];
+    const code = document.getElementById('codeEditor').value;
+
+    if (!code.trim()) { Toast.error('Write some code first!'); return; }
+
+    submitted = true;
+    document.getElementById('submitBtn').disabled = true;
+
+    const elapsedSecs = Math.floor((Date.now() - timerStart) / 1000);
+    const result = CorrectionEngine.analyze(ch, code);
+
+    // XP (reduce by hints used)
+    let xpEarned = result.isCorrect ? ch.xpReward : Math.floor(ch.xpReward * 0.1);
+    xpEarned = Math.max(xpEarned - (hintsUsed * 5), result.isCorrect ? 5 : 0);
+
+    if (result.isCorrect) {
+      totalScore += xpEarned;
+      const xpResult = Storage.addXP(xpEarned);
+      Storage.markChallengeComplete(lang, topicId, ch.id, result.score);
+      Storage.logActivity('challenge_complete', { lang, topicId, challengeId: ch.id, score: result.score });
+      Storage.updateStreak();
+      XPAnimation.show(xpEarned);
+      Confetti.burst();
+      Achievements.check(xpResult.profile);
+      document.getElementById('navXp').innerHTML = Nav.renderXP(xpResult.profile.xp, xpResult.profile.level_num);
+
+      if (elapsedSecs < 60) {
+        Storage.updateProfile({ hasQuickFinish: true });
+      }
+    } else {
+      Storage.logMistake(lang, topicId, ch.id, { code, error: result.feedback });
+    }
+
+    // Show correction
+    const corrPanel = document.getElementById('correctionPanel');
+    corrPanel.style.display = 'block';
+    corrPanel.innerHTML = buildCorrectionHTML(result, ch, xpEarned);
+    corrPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Add next button
+    setTimeout(() => {
+      const actions = corrPanel.querySelector('.correction-actions');
+      if (actions) {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.textContent = currentIdx < challenges.length - 1 ? 'Next Challenge →' : '🎉 Finish';
+        btn.onclick = () => {
+          if (currentIdx < challenges.length - 1) {
+            currentIdx++;
+            renderChallenge(currentIdx);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            showComplete();
+          }
+        };
+        actions.appendChild(btn);
+      }
+    }, 100);
+  };
+
+  function buildCorrectionHTML(result, ch, xpEarned) {
+    const isCorrect = result.isCorrect;
+    let html = `
+      <div class="correction-panel">
+        <div class="correction-status ${isCorrect ? 'correct' : 'wrong'}">
+          <span style="font-size:1.5rem;">${isCorrect ? '✅' : '❌'}</span>
+          <div>
+            <div style="font-size:1.1rem;">${result.feedback}</div>
+            ${xpEarned ? `<div style="font-size:0.85rem;opacity:0.8;">+${xpEarned} XP earned</div>` : ''}
+          </div>
+        </div>
+    `;
+
+    if (result.explanation) {
+      html += `
+        <div class="explanation-block">
+          <h5>💡 Explanation</h5>
+          <p style="color:var(--text-secondary);font-size:0.92rem;line-height:1.7;">${result.explanation}</p>
+        </div>
+      `;
+    }
+
+    if (result.steps && result.steps.length > 0) {
+      html += `
+        <div class="explanation-block">
+          <h5>📋 Step-by-Step</h5>
+          ${result.steps.map(s => `
+            <div class="step-explanation">
+              <span class="step-num">${s.step}</span>
+              <span style="color:var(--text-secondary);white-space:pre-wrap;">${s.text}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    if (!isCorrect && ch.solution) {
+      html += `
+        <div class="explanation-block">
+          <h5>✅ One Correct Solution</h5>
+          <pre class="code-block" style="margin-top:var(--space-sm);">${SyntaxHighlighter.highlight(ch.solution, lang)}</pre>
+        </div>
+      `;
+    }
+
+    if (result.encouragement) {
+      html += `<p style="font-style:italic;color:var(--text-muted);margin-top:var(--space-md);font-size:0.9rem;">
+        ${isCorrect ? '🌟' : '💪'} ${result.encouragement}
+      </p>`;
+    }
+
+    if (result.lessonToRevisit) {
+      html += `
+        <div style="margin-top:var(--space-md);">
+          <a href="lesson.html?lang=${lang}&topic=${topicId}&lesson=${result.lessonToRevisit}" class="btn btn-secondary btn-sm">
+            📖 Revisit Related Lesson
+          </a>
+        </div>
+      `;
+    }
+
+    html += `<div class="correction-actions flex gap-md" style="margin-top:var(--space-lg);"></div></div>`;
+    return html;
+  }
+
+  function showComplete() {
+    clearInterval(timerInterval);
+    const tp = Storage.getTopicProgress(lang, topicId);
+    const mastery = AdaptiveLearning.calculateMastery(tp);
+    const allDone = challenges.filter(c => tp.challengesCompleted?.includes(c.id)).length;
+
+    document.getElementById('completeEmoji').textContent = mastery >= 75 ? '🏆' : '🎉';
+    document.getElementById('completeTitle').textContent = mastery >= 75 ? 'Topic Mastered!' : 'Session Complete!';
+    document.getElementById('completeMessage').textContent = `You completed ${allDone} challenges for "${topic.title}".`;
+    document.getElementById('completeStats').innerHTML = `
+      <div class="stat-box"><span class="value" style="color:var(--neon-yellow);">${totalScore}</span><div class="label">XP Earned</div></div>
+      <div class="stat-box"><span class="value" style="color:var(--neon-green);">${mastery}%</span><div class="label">Mastery</div></div>
+      <div class="stat-box"><span class="value" style="color:var(--primary);">${allDone}/${challenges.length}</span><div class="label">Completed</div></div>
+    `;
+
+    Storage.logActivity('topic_session_end', { lang, topicId, score: totalScore });
+    const currentTopicProgress = Storage.getTopicProgress(lang, topicId);
+currentTopicProgress.status = 'completed';
+Storage.setTopicProgress(lang, topicId, currentTopicProgress);
+
+// unlock next topic
+const currentTopicIndex = course.topics.findIndex(t => t.id === topicId);
+
+if (currentTopicIndex !== -1 && currentTopicIndex < course.topics.length - 1) {
+  const nextTopic = course.topics[currentTopicIndex + 1];
+  Storage.unlockTopic(lang, nextTopic.id);
+}
+    Modal.open('completeModal');
+    Confetti.burst();
+  }
+
+  function escapeHTML(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Init
+  renderChallenge(0);
+
+})();
+</script>
+</body>
+</html>

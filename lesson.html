@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeQuest — Lesson</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">Code<span>Quest</span></a>
+  <div class="nav-links">
+    <div id="navXp"></div>
+    <a href="roadmap.html" class="nav-link">← Roadmap</a>
+    <a href="profile.html" class="nav-link">Profile</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="container">
+
+    <!-- Lesson progress bar at top -->
+    <div style="position:sticky;top:60px;z-index:40;padding:var(--space-sm) 0;background:rgba(5,8,16,0.9);backdrop-filter:blur(10px);">
+      <div class="flex-between" style="margin-bottom:6px;">
+        <span style="font-size:0.82rem;color:var(--text-secondary);" id="lessonProgressLabel">Lesson 1 of 1</span>
+        <span style="font-size:0.82rem;color:var(--primary);font-weight:700;" id="lessonProgressPct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="lessonProgressBar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Main lesson layout -->
+    <div class="lesson-layout" id="lessonLayout">
+      <!-- Left sidebar: lesson nav -->
+      <div class="lesson-sidebar-left" id="lessonSidebar"></div>
+
+      <!-- Main content -->
+      <div class="lesson-content-main page-enter" id="lessonContent">
+        <div class="flex-center" style="height:300px;">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+      <!-- Right sidebar: stats & hints -->
+      <div class="lesson-sidebar-right" id="lessonRightSidebar"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Quiz Result Modal -->
+<div class="modal-overlay" id="quizModal">
+  <div class="modal">
+    <div id="quizModalContent"></div>
+    <div style="margin-top:var(--space-xl);">
+      <button class="btn btn-primary" id="quizContinueBtn">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lesson Complete Modal -->
+<div class="modal-overlay" id="completeModal">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:4rem;margin-bottom:var(--space-md);">🎉</div>
+    <h2>Lesson Complete!</h2>
+    <p id="completeMessage" style="margin:var(--space-md) 0;"></p>
+    <div id="completeXP" style="font-size:2rem;font-weight:800;color:var(--neon-yellow);margin:var(--space-md) 0;"></div>
+    <div class="flex gap-md" style="justify-content:center;margin-top:var(--space-xl);">
+      <button class="btn btn-secondary" onclick="window.location.href='roadmap.html'">Back to Roadmap</button>
+      <button class="btn btn-primary" id="nextLessonBtn">Next Lesson →</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/adaptiveLearning.js"></script>
+<script src="data/javascript.js"></script>
+<script src="data/python.js"></script>
+<script src="data/other-languages.js"></script>
+<script>
+(function() {
+  const params  = new URLSearchParams(window.location.search);
+  const lang    = params.get('lang');
+  const topicId = params.get('topic');
+  const lessonId= params.get('lesson');
+
+  const profile = Storage.getProfile();
+  document.getElementById('navXp').innerHTML = Nav.renderXP(profile.xp, profile.level_num);
+
+  if (!lang || !topicId || !COURSES[lang]) {
+    window.location.href = 'roadmap.html'; return;
+  }
+
+  const course = COURSES[lang];
+  const topic  = course.topics.find(t => t.id === topicId);
+  if (!topic) { window.location.href = 'roadmap.html'; return; }
+
+  const lessons = topic.lessons || [];
+  if (lessons.length === 0) {
+    // No lessons, go to challenges
+    window.location.href = `challenge.html?lang=${lang}&topic=${topicId}`;
+    return;
+  }
+
+  let currentLessonIndex = 0;
+  if (lessonId) {
+    const idx = lessons.findIndex(l => l.id === lessonId);
+    if (idx !== -1) currentLessonIndex = idx;
+  }
+
+  function updateProgress() {
+    const pct = Math.round(((currentLessonIndex + 1) / lessons.length) * 100);
+    document.getElementById('lessonProgressLabel').textContent = `Lesson ${currentLessonIndex + 1} of ${lessons.length}`;
+    document.getElementById('lessonProgressPct').textContent = pct + '%';
+    ProgressUI.animateBar(document.getElementById('lessonProgressBar'), pct);
+  }
+
+  function renderSidebar() {
+    const sidebar = document.getElementById('lessonSidebar');
+    sidebar.innerHTML = `
+      <div class="glass-card" style="padding:var(--space-lg);">
+        <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:var(--space-md);">${topic.emoji} ${topic.title}</div>
+        ${lessons.map((l, i) => `
+          <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--radius-md);cursor:pointer;transition:all 0.2s;${i === currentLessonIndex ? 'background:rgba(79,138,255,0.1);border:1px solid var(--primary)' : 'border:1px solid transparent'};"
+            onclick="goToLesson(${i})" onmouseover="if(${i}!==currentLessonIndex)this.style.background='var(--bg-glass)'" onmouseout="if(${i}!==currentLessonIndex)this.style.background=''">
+            <span style="font-size:1rem;">${i < currentLessonIndex ? '✅' : i === currentLessonIndex ? '▶️' : '⬜'}</span>
+            <span style="font-size:0.88rem;font-weight:${i === currentLessonIndex ? '700' : '400'};color:${i === currentLessonIndex ? 'var(--text-primary)' : 'var(--text-secondary)'};">${l.title}</span>
+          </div>
+        `).join('')}
+        <div style="margin-top:var(--space-lg);padding-top:var(--space-md);border-top:1px solid var(--border);">
+          <a href="challenge.html?lang=${lang}&topic=${topicId}" class="btn btn-secondary" style="width:100%;justify-content:center;">
+            ⚔️ Practice Challenges
+          </a>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderRightSidebar() {
+    const tp = Storage.getTopicProgress(lang, topicId);
+    const mastery = AdaptiveLearning.calculateMastery(tp);
+    const sidebar = document.getElementById('lessonRightSidebar');
+    sidebar.innerHTML = `
+      <div class="glass-card" style="padding:var(--space-lg);margin-bottom:var(--space-md);">
+        <h4 style="font-size:0.9rem;margin-bottom:var(--space-md);">Your Progress</h4>
+        <div class="stat-box" style="margin-bottom:var(--space-sm);">
+          <span class="value" style="color:var(--neon-green);font-size:1.8rem;">${mastery}%</span>
+          <div class="label">Topic Mastery</div>
+        </div>
+        <div class="progress-bar" style="margin-top:var(--space-sm);">
+          <div class="progress-fill" style="width:${mastery}%"></div>
+        </div>
+      </div>
+      <div class="glass-card" style="padding:var(--space-lg);">
+        <h4 style="font-size:0.9rem;margin-bottom:var(--space-sm);">💡 Key Tip</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">Read code out loud as you go. It helps your brain understand it faster.</p>
+      </div>
+    `;
+  }
+
+  function renderLesson(index) {
+    const lesson  = lessons[index];
+    const content = document.getElementById('lessonContent');
+
+    let html = `
+      <div class="lesson-header">
+        <div class="flex gap-md" style="align-items:center;margin-bottom:var(--space-md);">
+          <span class="badge badge-primary">${topic.title}</span>
+          <span class="badge badge-purple">${topic.difficulty}</span>
+        </div>
+        <h1 style="font-size:2rem;margin-bottom:var(--space-sm);">${lesson.title}</h1>
+      </div>
+    `;
+
+    let quizCount = 0;
+
+    for (const block of lesson.content) {
+      html += renderBlock(block, quizCount);
+      if (block.type === 'quiz') quizCount++;
+    }
+
+    // Navigation buttons
+    html += `
+      <div class="flex-between" style="margin-top:var(--space-2xl);padding-top:var(--space-xl);border-top:1px solid var(--border);">
+        <button class="btn btn-ghost" onclick="goToLesson(${index - 1})" ${index === 0 ? 'disabled' : ''}>← Previous</button>
+        <button class="btn btn-primary" id="completeBtn" onclick="completeLesson()">
+          ${index === lessons.length - 1 ? '🎉 Complete Topic' : 'Next Lesson →'}
+        </button>
+      </div>
+    `;
+
+    content.innerHTML = html;
+
+    // Attach quiz handlers
+    document.querySelectorAll('.quiz-option').forEach(opt => {
+      opt.addEventListener('click', handleQuizOption);
+    });
+
+    updateProgress();
+    renderSidebar();
+    renderRightSidebar();
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderBlock(block, quizIdx) {
+    switch (block.type) {
+      case 'explanation':
+        return `
+          <div class="lesson-step fade-in-up">
+            <div class="flex gap-md" style="align-items:flex-start;">
+              <div class="step-number">📖</div>
+              <div style="flex:1;">
+                <h4 style="margin-bottom:var(--space-sm);">${block.title}</h4>
+                <p style="color:var(--text-secondary);line-height:1.8;">${block.text.replace(/`([^`]+)`/g, '<code style="font-family:var(--font-code);background:rgba(79,138,255,0.12);color:var(--primary);padding:2px 6px;border-radius:4px;">$1</code>').replace(/\n/g, '<br>')}</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+      case 'code':
+        return `
+          <div class="lesson-step fade-in-up">
+            <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:var(--space-sm);">
+              ${block.label || 'Example'}
+            </div>
+            <pre class="code-block"><code id="codeBlock_${Math.random().toString(36).substr(2,6)}">${SyntaxHighlighter.highlight(block.code || '', block.lang || 'javascript')}</code></pre>
+          </div>
+        `;
+
+      case 'tip':
+        return `
+          <div style="background:rgba(255,230,0,0.06);border:1px solid rgba(255,230,0,0.2);border-radius:var(--radius-md);padding:var(--space-lg);margin:var(--space-md) 0;font-size:0.92rem;color:var(--text-secondary);">
+            ${block.text}
+          </div>
+        `;
+
+      case 'warning':
+        return `
+          <div style="background:rgba(255,0,153,0.06);border:1px solid rgba(255,0,153,0.2);border-radius:var(--radius-md);padding:var(--space-lg);margin:var(--space-md) 0;font-size:0.92rem;color:var(--text-secondary);">
+            ${block.text}
+          </div>
+        `;
+
+      case 'quiz':
+        return `
+          <div class="lesson-quiz fade-in-up" id="quiz_${quizIdx}" data-correct="${block.correct}" data-explanation="${escapeAttr(block.explanation || '')}">
+            <h4 style="margin-bottom:var(--space-lg);">
+              <span style="color:var(--primary);">🧠 Quick Check</span><br>
+              <span style="font-weight:400;font-size:1rem;font-family:var(--font-body);">${block.question}</span>
+            </h4>
+            <div class="quiz-options" id="quizOpts_${quizIdx}">
+              ${block.options.map((opt, i) => `
+                <div class="quiz-option" data-index="${i}" data-quiz="${quizIdx}">
+                  <span style="width:24px;height:24px;border-radius:50%;background:var(--bg-glass);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;">${String.fromCharCode(65+i)}</span>
+                  <span>${opt}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div id="quizFeedback_${quizIdx}" style="display:none;margin-top:var(--space-md);padding:var(--space-md);border-radius:var(--radius-md);font-size:0.9rem;"></div>
+          </div>
+        `;
+
+      default:
+        return `<p>${block.text || ''}</p>`;
+    }
+  }
+
+  function escapeAttr(str) {
+    return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function handleQuizOption(e) {
+    const opt     = e.currentTarget;
+    const quizIdx = opt.dataset.quiz;
+    const quiz    = document.getElementById(`quiz_${quizIdx}`);
+    const correct = parseInt(quiz.dataset.correct);
+    const explanation = quiz.dataset.explanation;
+    const selected = parseInt(opt.dataset.index);
+
+    // Disable all options
+    document.querySelectorAll(`[data-quiz="${quizIdx}"]`).forEach(o => {
+      o.style.pointerEvents = 'none';
+    });
+
+    const isCorrect = selected === correct;
+    opt.classList.add(isCorrect ? 'correct' : 'wrong');
+
+    if (!isCorrect) {
+      document.querySelectorAll(`[data-quiz="${quizIdx}"]`)[correct].classList.add('correct');
+    }
+
+    const feedback = document.getElementById(`quizFeedback_${quizIdx}`);
+    feedback.style.display = 'block';
+    feedback.style.background = isCorrect ? 'rgba(0,255,136,0.08)' : 'rgba(255,0,153,0.08)';
+    feedback.style.border = isCorrect ? '1px solid rgba(0,255,136,0.2)' : '1px solid rgba(255,0,153,0.2)';
+    feedback.style.color = isCorrect ? 'var(--neon-green)' : 'var(--text-secondary)';
+    feedback.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + explanation;
+
+    if (isCorrect) Confetti.burst();
+    else quiz.classList.add('wrong-shake');
+  }
+
+  window.goToLesson = function(index) {
+    if (index < 0 || index >= lessons.length) return;
+    currentLessonIndex = index;
+    renderLesson(index);
+  };
+
+  window.completeLesson = function() {
+    const lesson = lessons[currentLessonIndex];
+    Storage.markLessonComplete(lang, topicId, lesson.id);
+    Storage.logActivity('lesson_complete', { lang, topicId, lessonId: lesson.id });
+    Storage.updateStreak();
+
+    const xpGain = 50;
+    const result = Storage.addXP(xpGain);
+
+    XPAnimation.show(xpGain);
+    Confetti.burst();
+    Achievements.check(result.profile);
+
+    if (currentLessonIndex === lessons.length - 1) {
+      // All lessons done
+      document.getElementById('completeMessage').textContent = `You've completed all lessons for "${topic.title}"! Time to practice with challenges.`;
+      document.getElementById('completeXP').textContent = `+${xpGain} XP`;
+      document.getElementById('nextLessonBtn').textContent = 'Try Challenges ⚔️';
+      document.getElementById('nextLessonBtn').onclick = () => {
+        window.location.href = `challenge.html?lang=${lang}&topic=${topicId}`;
+      };
+      Modal.open('completeModal');
+    } else {
+      goToLesson(currentLessonIndex + 1);
+      Toast.success('Lesson complete! +' + xpGain + ' XP');
+    }
+  };
+
+  // Init
+  renderLesson(currentLessonIndex);
+
+})();
+</script>
+</body>
+</html>
